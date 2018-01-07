@@ -1,0 +1,7 @@
+/*.egg-info
+/dist
+/build
+/test
+/examples
+__pycache__
+*.DS_Store
