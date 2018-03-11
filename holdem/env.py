@@ -113,7 +113,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       ]),
     ] * n_seats)
 
-  def _seed(self, seed=None):
+  def seed(self, seed=None):
     _, seed = seeding.np_random(seed)
     return [seed]
 
@@ -141,7 +141,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     except ValueError:
       pass
 
-  def _reset(self):
+  def reset(self):
     self._reset_game()
     self._ready_players()
     self._number_of_hands = 1
@@ -161,7 +161,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._folded_players = []
     return self._get_current_reset_returns()
 
-  def _step(self, actions):
+  def step(self, actions):
     """
     CHECK = 0
     CALL = 1
@@ -232,7 +232,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._resolve_round(players)
     return self._get_current_step_returns(terminal)
 
-  def _render(self, mode='human', close=False):
+  def render(self, mode='human', close=False):
     print('total pot: {}'.format(self._totalpot))
     if self._last_actions is not None:
       pid = self._last_player.player_id
