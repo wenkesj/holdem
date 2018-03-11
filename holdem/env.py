@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 from gym import Env, error, spaces, utils
+from gym.utils import seeding
 
 from treys import Card, Deck, Evaluator
 
@@ -33,7 +34,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
                       [150,300], [200,400], [300,600], [400,800], [500,10000],
                       [600,1200], [800,1600], [1000,2000]]
 
-  def __init__(self, n_seats, max_limit=1e12, debug=False):
+  def __init__(self, n_seats, max_limit=100000, debug=False):
     n_suits = 4                     # s,h,d,c
     n_ranks = 13                    # 2,3,4,5,6,7,8,9,T,J,Q,K,A
     n_community_cards = 5           # flop, turn, river
@@ -71,20 +72,20 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     self.observation_space = spaces.Tuple([
       spaces.Tuple([                # players
         spaces.MultiDiscrete([
-          [0, 1],                   # emptyplayer
-          [0, n_seats - 1],         # seat
-          [0, max_limit],           # stack
-          [0, 1],                   # is_playing_hand
-          [-1, max_limit],          # handrank
-          [0, 1],                   # playedthisround
-          [0, 1],                   # is_betting
-          [0, 1],                   # isallin
-          [0, max_limit],           # last side pot
+          1,                   # emptyplayer
+          n_seats - 1,         # seat
+          max_limit,           # stack
+          1,                   # is_playing_hand
+          max_limit,           # handrank
+          1,                   # playedthisround
+          1,                   # is_betting
+          1,                   # isallin
+          max_limit,           # last side pot
         ]),
         spaces.Tuple([
           spaces.MultiDiscrete([    # hand
-            [-1, n_suits],          # suit, can be negative one if it's not avaiable.
-            [-1, n_ranks],          # rank, can be negative one if it's not avaiable.
+            n_suits,          # suit, can be negative one if it's not avaiable.
+            n_ranks,          # rank, can be negative one if it's not avaiable.
           ])
         ] * n_pocket_cards)
       ] * n_seats),
@@ -98,19 +99,23 @@ class TexasHoldemEnv(Env, utils.EzPickle):
         spaces.Discrete(max_limit),   # how much needed to call by current player.
         spaces.Discrete(n_seats - 1), # current player seat location.
         spaces.MultiDiscrete([        # community cards
-          [-1, n_suits - 1],          # suit
-          [-1, n_ranks - 1],          # rank
-          [0, 1],                     # is_flopped
+          n_suits - 1,          # suit
+          n_ranks - 1,          # rank
+          1,                     # is_flopped
         ]),
       ] * n_stud),
     ])
 
     self.action_space = spaces.Tuple([
       spaces.MultiDiscrete([
-        [0, 3],                     # action_id
-        [0, max_limit],             # raise_amount
+        3,                     # action_id
+        max_limit,             # raise_amount
       ]),
     ] * n_seats)
+
+  def seed(self, seed=None):
+    _, seed = seeding.np_random(seed)
+    return [seed]
 
   def add_player(self, seat_id, stack=2000):
     """Add a player to the environment seat with the given stack (chipcount)"""
@@ -136,7 +141,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     except ValueError:
       pass
 
-  def _reset(self):
+  def reset(self):
     self._reset_game()
     self._ready_players()
     self._number_of_hands = 1
@@ -156,7 +161,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._folded_players = []
     return self._get_current_reset_returns()
 
-  def _step(self, actions):
+  def step(self, actions):
     """
     CHECK = 0
     CALL = 1
