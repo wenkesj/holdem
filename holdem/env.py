@@ -223,7 +223,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
         # break if a single player left
         if len(players) == 1:
           self._resolve(players)
-    else:
+    if all([player.playedthisround for player in players]):
       self._resolve(players)
 
     terminal = False
