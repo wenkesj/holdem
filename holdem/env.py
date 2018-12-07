@@ -227,7 +227,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._resolve(players)
 
     terminal = False
-    if self._round == 4:
+    if self._round == 4 or len(players) == 1:
       terminal = True
       self._resolve_round(players)
     return self._get_current_step_returns(terminal)
