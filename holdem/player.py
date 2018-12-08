@@ -123,7 +123,7 @@ class Player(object):
         move_tuple = ('raise', raise_amount)
       elif action_idx == Player.CALL:
         move_tuple = ('call', tocall)
-      elif choice == Player.FOLD:
+      elif action_idx == Player.FOLD:
         move_tuple = ('fold', -1)
       else:
         raise error.Error('invalid action ({}) must be raise (2), call (1), or fold (3)'.format(action_idx))
