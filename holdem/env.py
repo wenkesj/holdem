@@ -227,6 +227,10 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._resolve(players)
 
     terminal = False
+    if all([player.isallin for player in players]):
+      while self._round < 4:
+        self._deal_next_round()
+        self._round += 1
     if self._round == 4 or len(players) == 1:
       terminal = True
       self._resolve_round(players)
