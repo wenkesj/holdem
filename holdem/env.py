@@ -205,7 +205,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
           print('Player', self._current_player.player_id, move)
         self._current_player = self._next(players, self._current_player)
       elif move[0] == 'raise':
-        self._player_bet(self._current_player, move[1]+self._current_player.currentbet)
+        self._player_bet(self._current_player, move[1])
         if self._debug:
           print('Player', self._current_player.player_id, move)
         for p in players:
