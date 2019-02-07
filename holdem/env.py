@@ -367,7 +367,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     for player in self._player_dict.values():
       player.currentbet = 0
       player.playedthisround = False
-    self._round += 1
     self._tocall = 0
     self._lastraise = 0
 
