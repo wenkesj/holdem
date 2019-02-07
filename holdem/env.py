@@ -51,7 +51,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     self.community = []
     self._round = 0
     self._button = 0
-    self._discard = []
 
     self._side_pots = [0] * n_seats
     self._current_sidepot = 0 # index of _side_pots
@@ -322,15 +321,12 @@ class TexasHoldemEnv(Env, utils.EzPickle):
         player.hand = self._deck.draw(2)
 
   def _flop(self):
-    self._discard.append(self._deck.draw(1)) #burn
     self.community = self._deck.draw(3)
 
   def _turn(self):
-    self._discard.append(self._deck.draw(1)) #burn
     self.community.append(self._deck.draw(1))
 
   def _river(self):
-    self._discard.append(self._deck.draw(1)) #burn
     self.community.append(self._deck.draw(1))
 
   def _ready_players(self):
