@@ -118,8 +118,8 @@ class Player(object):
       if action_idx == Player.RAISE:
         if raise_amount < minraise:
           raise error.Error('raise must be greater than minraise {}'.format(minraise))
-        if raise_amount > self.stack:
-          raise error.Error('raise must be less than maxraise {}'.format(self.stack))
+        if raise_amount > self.stack + self.currentbet:
+          raise error.Error('raise must be less than maxraise {}'.format(self.stack + self.currentbet))
         move_tuple = ('raise', raise_amount)
       elif action_idx == Player.CALL:
         move_tuple = ('call', tocall)
