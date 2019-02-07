@@ -219,9 +219,9 @@ class TexasHoldemEnv(Env, utils.EzPickle):
         self._current_player = self._next(players, self._current_player)
         players.remove(folded_player)
         self._folded_players.append(folded_player)
-        # break if a single player left
-        if len(players) == 1:
-          self._resolve(players)
+        # break if a single player left <<-- already will be resolved in next check, if we folded then there must be a bet and the other player has acted
+        #if len(players) == 1:
+          #self._resolve(players)
     if all([player.playedthisround for player in players]):
       self._resolve(players)
 
@@ -229,7 +229,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     if all([player.isallin for player in players]):
       while self._round < 4:
         self._deal_next_round()
-        self._round += 1
     if self._round == 4 or len(players) == 1:
       terminal = True
       self._resolve_round(players)
@@ -269,6 +268,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._turn()
     elif self._round == 3:
       self._river()
+    self._round += 1
 
   def _increment_blinds(self):
     self._blind_index = min(self._blind_index + 1, len(TexasHoldemEnv.BLIND_INCREMENTS) - 1)
