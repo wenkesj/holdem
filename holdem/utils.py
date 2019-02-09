@@ -29,6 +29,26 @@ class action_table:
   FOLD = 3
   NA = 0
 
+class community_table:
+  BUTTON_POS = 0
+  SMALL_BLIND = 1
+  BIG_BLIND = 2
+  POT = 3
+  LAST_RAISE = 4
+  MINRAISE = 5
+  TO_CALL = 6
+  TO_ACT_POS = 7
+
+class player_table:
+  SEAT_EMPTY = 0
+  SEAT_ID = 1
+  STACK = 2
+  HAND = 3
+  HAND_RANK = 4
+  HAS_ACTED = 5
+  IS_BETTING = 6
+  IS_ALL_IN = 7
+  LAST_SIDEPOT = 8
 
 def format_action(player, action):
   color = False

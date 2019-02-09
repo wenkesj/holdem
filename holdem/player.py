@@ -100,7 +100,7 @@ class Player(object):
     raise_amount = int(raise_amount)
     action_idx = int(action_idx)
 
-    if tocall == 0:
+    if tocall - self.currentbet == 0:
       assert action_idx in [Player.CHECK, Player.RAISE]
       if action_idx == Player.RAISE:
         if raise_amount < minraise:
