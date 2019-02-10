@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2016 Aleksander Beloi (beloi.alex@gmail.com)
 # Copyright (c) 2018 Sam Wenke (samwenke@gmail.com)
+# Copyright (c) 2019 Ingvar Lond (ingvar.lond@gmail.com)
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the "Software"),
@@ -190,9 +191,10 @@ class TexasHoldemEnv(Env, utils.EzPickle):
         return self._get_current_step_returns(False)
       move = self._current_player.player_move(
               self._output_state(self._current_player), actions[self._current_player.player_id])
-      self._player_bet(self._current_player, move[1])
       if self._debug:
         print('Player', self._current_player.player_id, move)
+      if move[0] != 'fold':
+        self._player_bet(self._current_player, move[1])
       if move[0] == 'raise':
         for p in players:
           if p != self._current_player:
@@ -274,6 +276,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     if self._debug:
       print('player ', player.player_id, 'small blind', self._smallblind)
     self._player_bet(player, self._smallblind)
+    player.blind = self._smallblind
     player.playedthisround = False
 
   def _post_bigblind(self, player):
@@ -281,6 +284,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       print('player ', player.player_id, 'big blind', self._bigblind)
     self._player_bet(player, self._bigblind)
     player.playedthisround = False
+    player.blind = self._bigblind
     self._lastraise = self._bigblind
 
   def _player_bet(self, player, total_bet):
@@ -467,6 +471,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
 
   def _get_current_step_returns(self, terminal):
     obs = self._get_current_state()
-    # TODO, make this something else?
-    rew = [player.stack for player in self._seats]
-    return obs, rew, terminal, [] # TODO, return some info?
+    rew = [player.stack - player.hand_starting_stack + player.blind if terminal else 0 for player in self._seats]
+    info = {}
+    info['money_won'] = self._seats[0].stack - self._seats[0].hand_starting_stack if terminal else 0
+    return obs, rew, terminal, info

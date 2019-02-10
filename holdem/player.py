@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2016 Aleksander Beloi (beloi.alex@gmail.com)
 # Copyright (c) 2018 Sam Wenke (samwenke@gmail.com)
+# Copyright (c) 2019 Ingvar Lond (ingvar.lond@gmail.com)
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the "Software"),
@@ -39,10 +40,12 @@ class Player(object):
 
     self.hand = []
     self.stack = stack
+    self.hand_starting_stack = self.stack
     self.currentbet = 0
     self.lastsidepot = 0
     self._seat = -1
     self.handrank = -1
+    self.blind = 0
 
     # flags for table management
     self.emptyplayer = emptyplayer
@@ -65,6 +68,7 @@ class Player(object):
     self.isallin = False
     self.currentbet = 0
     self.lastsidepot = 0
+    self.hand_starting_stack = self.stack
     self.playing_hand = (self.stack != 0)
 
   def bet(self, bet_size):
