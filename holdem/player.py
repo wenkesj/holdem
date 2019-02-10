@@ -93,7 +93,7 @@ class Player(object):
   def player_move(self, table_state, action):
     self.update_localstate(table_state)
     bigblind = table_state.get('bigblind')
-    tocall = min(table_state.get('tocall', 0), self.stack)
+    tocall = min(table_state.get('tocall', 0), self.stack + self.currentbet)
     minraise = table_state.get('minraise', 0)
 
     [action_idx, raise_amount] = action
@@ -105,8 +105,8 @@ class Player(object):
       if action_idx == Player.RAISE:
         if raise_amount < minraise:
           raise error.Error('raise must be greater than minraise {}'.format(minraise))
-        if raise_amount > self.stack:
-          raise error.Error('raise must be less than maxraise {}'.format(self.stack))
+        if raise_amount > self.stack + self.currentbet:
+          raise error.Error('raise must be less than maxraise {}'.format(self.stack + self.currentbet))
         move_tuple = ('raise', raise_amount)
       elif action_idx == Player.CHECK:
         move_tuple = ('check', 0)
