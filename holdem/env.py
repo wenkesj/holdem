@@ -26,7 +26,7 @@ from gym.utils import seeding
 from treys import Card, Deck, Evaluator
 
 from .player import Player
-from .utils import hand_to_str, format_action
+from .utils import hand_to_str, format_action, action_table, community_table, player_table
 
 
 class TexasHoldemEnv(Env, utils.EzPickle):
@@ -236,7 +236,16 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     print('-' + hand_to_str(community_cards))
     print('players:')
     for idx, hand in enumerate(player_hands):
-      print('{}{}stack: {}'.format(idx, hand_to_str(hand), self._seats[idx].stack))
+      position_string = self._get_position_string(idx, community_infos)
+      print('{} {}{}stack: {}'.format(idx, position_string, hand_to_str(hand), self._seats[idx].stack))
+
+  def _get_position_string(self, idx, community_infos):
+    button_pos = community_infos[community_table.BUTTON_POS]
+    if idx == (button_pos + 1) % len(self._seats):
+      return 'SB'
+    elif idx == (button_pos + 2) % len(self._seats):
+      return 'BB'
+    return '  '
 
   def _resolve(self, players):
     self._current_player = self._first_to_act(players)
