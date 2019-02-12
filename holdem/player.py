@@ -41,6 +41,7 @@ class Player(object):
     self.hand = []
     self.stack = stack
     self.hand_starting_stack = self.stack
+    self.stack_for_street = self.stack
     self.currentbet = 0
     self.lastsidepot = 0
     self._seat = -1
@@ -69,6 +70,7 @@ class Player(object):
     self.currentbet = 0
     self.lastsidepot = 0
     self.hand_starting_stack = self.stack
+    self.stack_for_street = self.stack
     self.playing_hand = (self.stack != 0)
 
   def declare_action(self, bet_size):
@@ -77,6 +79,7 @@ class Player(object):
       return
     self.stack -= (bet_size - self.currentbet)
     self.currentbet = bet_size
+    self.stack_for_street = self.stack + self.currentbet
     if self.stack == 0:
       self.isallin = True
 
@@ -86,8 +89,8 @@ class Player(object):
   def player_state(self):
     return (self.get_seat(), self.stack, self.playing_hand, self.betting, self.player_id)
 
-  def reset_stack(self):
-    self.stack = 2000
+  def reset_stack(self, amount=2000):
+    self.stack = amount
 
   def update_localstate(self, table_state):
     self.stack = table_state.get('stack')
@@ -97,7 +100,7 @@ class Player(object):
   def validate_action(self, table_state, action):
     self.update_localstate(table_state)
     bigblind = table_state.get('bigblind')
-    tocall = min(table_state.get('tocall', 0), self.stack + self.currentbet)
+    tocall = min(table_state.get('tocall', 0), self.stack_for_street)
     minraise = table_state.get('minraise', 0)
 
     [action_idx, raise_amount] = action
@@ -109,8 +112,8 @@ class Player(object):
       if action_idx == Player.RAISE:
         if raise_amount < minraise:
           raise error.Error('raise must be greater than minraise {}'.format(minraise))
-        if raise_amount > self.stack + self.currentbet:
-          raise error.Error('raise must be less than maxraise {}'.format(self.stack + self.currentbet))
+        if raise_amount > self.stack_for_street:
+          raise error.Error('raise must be less than maxraise {}'.format(self.stack_for_street))
         move_tuple = ('raise', raise_amount)
       elif action_idx == Player.CHECK:
         move_tuple = ('check', 0)
@@ -122,8 +125,8 @@ class Player(object):
       if action_idx == Player.RAISE:
         if raise_amount < minraise:
           raise error.Error('raise must be greater than minraise {}'.format(minraise))
-        if raise_amount > self.stack + self.currentbet:
-          raise error.Error('raise must be less than maxraise {}'.format(self.stack + self.currentbet))
+        if raise_amount > self.stack_for_street:
+          raise error.Error('raise must be less than maxraise {}'.format(self.stack_for_street))
         move_tuple = ('raise', raise_amount)
       elif action_idx == Player.CALL:
         move_tuple = ('call', tocall)

@@ -47,7 +47,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
   def __init__(self, n_seats, max_limit=100000, debug=False):
     n_suits = 4                     # s,h,d,c
     n_ranks = 13                    # 2,3,4,5,6,7,8,9,T,J,Q,K,A
-    n_community_cards = 5           # flop, turn, river
     n_pocket_cards = 2
     n_stud = 5
 
@@ -232,7 +231,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       print(format_action(self._last_player, self._last_actions[pid]))
 
     (player_states, community_states) = self._get_current_state()
-    (player_infos, player_hands) = zip(*player_states)
+    (_, player_hands) = zip(*player_states)
     (community_infos, community_cards) = community_states
     blinds_idxs = self._get_blind_indexes(community_infos)
 
