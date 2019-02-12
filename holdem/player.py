@@ -53,7 +53,7 @@ class Player(object):
     self.isallin = False
     self.playing_hand = False
     self.playedthisround = False
-    self.sitting_out = True
+    self.sitting_out = False # not used at the moment, but might become useful in the future
 
   def get_seat(self):
     return self._seat

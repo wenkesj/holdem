@@ -21,6 +21,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+from enum import IntEnum
+
 from gym import Env, error, spaces, utils
 from gym.utils import seeding
 
@@ -29,6 +31,13 @@ from treys import Card, Deck, Evaluator
 from .player import Player
 from .utils import hand_to_str, format_action, action_table, community_table, player_table
 
+class Street(IntEnum):
+    NOT_STARTED = 0
+    PREFLOP = 1
+    FLOP = 2
+    TURN = 3
+    RIVER = 4
+    SHOWDOWN = 5
 
 class TexasHoldemEnv(Env, utils.EzPickle):
   BLIND_INCREMENTS = [[10,25], [25,50], [50,100], [75,150], [100,200],
@@ -50,7 +59,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     self._evaluator = Evaluator()
 
     self.community = []
-    self._round = 0
+    self._round = Street.NOT_STARTED
     self._button = 0
 
     self._side_pots = [0] * n_seats
@@ -143,7 +152,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
 
   def reset(self):
     self._reset_game()
-    self._ready_players()
     self._number_of_hands = 1
     [self._smallblind, self._bigblind] = TexasHoldemEnv.BLIND_INCREMENTS[0]
     if len(self._player_dict) >= 2:
@@ -155,7 +163,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       self._post_bigblind(self._current_player)
       self._current_player = self._next(players, self._current_player)
       self._tocall = self._bigblind
-      self._round = 0 # 1-preflop, 2-flop, 3-turn, 4-river, 5-showdown
       self._deal_next_round()
       self._folded_players = []
     return self._get_current_reset_returns()
@@ -175,7 +182,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     if self._current_player is None:
       raise error.Error('Round cannot be played without 2 or more players.')
 
-    if self._round == 5:
+    if self._round == Street.SHOWDOWN:
       raise error.Error('Rounds already finished, needs to be reset.')
 
     players = [p for p in self._seats if p.playing_hand]
@@ -216,9 +223,9 @@ class TexasHoldemEnv(Env, utils.EzPickle):
 
     terminal = False
     if all([player.isallin for player in players]):
-      while self._round < 5:
+      while self._round < Street.SHOWDOWN:
         self._deal_next_round()
-    if self._round == 5 or len(players) == 1:
+    if self._round == Street.SHOWDOWN or len(players) == 1:
       terminal = True
       self._resolve_round(players)
     return self._get_current_step_returns(terminal)
@@ -233,21 +240,37 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     (player_states, community_states) = self._get_current_state()
     (player_infos, player_hands) = zip(*player_states)
     (community_infos, community_cards) = community_states
+    blinds_idxs = self._get_blind_indexes(community_infos)
 
     print('community:')
     print('-' + hand_to_str(community_cards))
     print('players:')
     for idx, hand in enumerate(player_hands):
-      position_string = self._get_position_string(idx, community_infos)
+      position_string = self._get_blind_str(blinds_idxs, idx)
       print('{} {}{}stack: {}'.format(idx, position_string, hand_to_str(hand), self._seats[idx].stack))
 
-  def _get_position_string(self, idx, community_infos):
-    button_pos = community_infos[community_table.BUTTON_POS]
-    if idx == (button_pos + 1) % len(self._seats):
-      return 'SB'
-    elif idx == (button_pos + 2) % len(self._seats):
-      return 'BB'
-    return '  '
+  def _get_blind_str(self, blinds_idxs, idx):
+    if idx == blinds_idxs[0]:
+      return "SB"
+    elif idx == blinds_idxs[1]:
+      return "BB"
+    else:
+      return "  "
+
+  def _get_blind_indexes(self, community_infos):
+    idx = community_infos[community_table.BUTTON_POS]
+    # If more than 2 players playing, SB is next from BTN, else BTN is SB
+    if len([s for s in self._seats if not s.sitting_out and not s.emptyplayer]) > 2:
+      idx = (idx + 1) % len(self._seats)
+    sb_idx = -1
+    while True:
+      while self._seats[idx].sitting_out or self._seats[idx].emptyplayer:
+        idx = (idx + 1) % len(self._seats)
+      if sb_idx == -1:
+        sb_idx = idx
+      else:
+        return (sb_idx, idx)
+      idx = (idx + 1) % len(self._seats)
 
   def _resolve(self, players):
     self._current_player = self._first_to_act(players)
@@ -258,13 +281,13 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       print('totalpot', self._totalpot)
 
   def _deal_next_round(self):
-    if self._round == 0:
+    if self._round == Street.NOT_STARTED:
       self._deal()
-    elif self._round == 1:
+    elif self._round == Street.PREFLOP:
       self._flop()
-    elif self._round == 2:
+    elif self._round == Street.FLOP:
       self._turn()
-    elif self._round == 3:
+    elif self._round == Street.TURN:
       self._river()
     self._round += 1
 
@@ -301,7 +324,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     self._lastraise = max(self._lastraise, relative_bet  - self._lastraise)
 
   def _first_to_act(self, players):
-    if self._round == 0 and len(players) == 2:
+    if self._round == Street.NOT_STARTED and len(players) == 2:
       return self._next(sorted(
           players + [self._seats[self._button]], key=lambda x:x.get_seat()),
           self._seats[self._button])
@@ -328,12 +351,6 @@ class TexasHoldemEnv(Env, utils.EzPickle):
 
   def _river(self):
     self.community.append(self._deck.draw(1))
-
-  def _ready_players(self):
-    for p in self._seats:
-      if not p.emptyplayer and p.sitting_out:
-        p.sitting_out = False
-        p.playing_hand = True
 
   def _resolve_sidepots(self, players_playing):
     players = [p for p in players_playing if p.currentbet]
@@ -402,6 +419,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
           earliest.refund(self._side_pots[pot_idx])
 
   def _reset_game(self):
+    self._round = Street.NOT_STARTED
     playing = 0
     for player in self._seats:
       if not player.emptyplayer and not player.sitting_out:
