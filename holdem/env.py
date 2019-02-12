@@ -437,7 +437,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       'pocket_cards': current_player.hand,
       'pot': self._totalpot,
       'button': self._button,
-      'tocall': (self._tocall),
+      'tocall': self._tocall,
       'stack': current_player.stack,
       'bigblind': self._bigblind,
       'player_id': current_player.player_id,
