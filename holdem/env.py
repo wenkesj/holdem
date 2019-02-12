@@ -479,8 +479,8 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     return self._get_current_state()
 
   def _get_current_step_returns(self, terminal):
-    obs = self._get_current_state()
-    rew = [player.stack - player.hand_starting_stack if terminal else 0 for player in self._seats]
+    observation = self._get_current_state()
+    reward = [(player.stack - player.hand_starting_stack) / self._bigblind if terminal else 0 for player in self._seats]
     info = {}
     info['money_won'] = self._seats[0].stack - (self._seats[0].hand_starting_stack + self._seats[0].blind) if terminal else 0
-    return obs, rew, terminal, info
+    return observation, reward, terminal, info
