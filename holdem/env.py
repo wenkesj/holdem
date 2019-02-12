@@ -292,15 +292,13 @@ class TexasHoldemEnv(Env, utils.EzPickle):
     if self._debug:
       print('player ', player.player_id, 'small blind', self._smallblind)
     self._player_action(player, self._smallblind)
-    player.blind = self._smallblind
-    player.playedthisround = False
+    player.post_blind(self._smallblind)
 
   def _post_bigblind(self, player):
     if self._debug:
       print('player ', player.player_id, 'big blind', self._bigblind)
     self._player_action(player, self._bigblind)
-    player.playedthisround = False
-    player.blind = self._bigblind
+    player.post_blind(self._bigblind)
     self._lastraise = self._bigblind
 
   def _player_action(self, player, total_bet):
@@ -482,7 +480,7 @@ class TexasHoldemEnv(Env, utils.EzPickle):
 
   def _get_current_step_returns(self, terminal):
     obs = self._get_current_state()
-    rew = [player.stack - player.hand_starting_stack + player.blind if terminal else 0 for player in self._seats]
+    rew = [player.stack - player.hand_starting_stack if terminal else 0 for player in self._seats]
     info = {}
-    info['money_won'] = self._seats[0].stack - self._seats[0].hand_starting_stack if terminal else 0
+    info['money_won'] = self._seats[0].stack - (self._seats[0].hand_starting_stack + self._seats[0].blind) if terminal else 0
     return obs, rew, terminal, info

@@ -83,6 +83,11 @@ class Player(object):
     if self.stack == 0:
       self.isallin = True
 
+  def post_blind(self, amount):
+    self.hand_starting_stack -= amount
+    self.blind = amount
+    self.playedthisround = False
+
   def refund(self, ammount):
     self.stack += ammount
 
