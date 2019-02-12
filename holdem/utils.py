@@ -20,19 +20,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from enum import Enum
+from enum import IntEnum
 
 from treys import Card
 
 
-class action_table(Enum):
+class action_table(IntEnum):
   CHECK = 0
   CALL = 1
   RAISE = 2
   FOLD = 3
   NA = 0
 
-class community_table(Enum):
+class community_table(IntEnum):
   BUTTON_POS = 0
   SMALL_BLIND = 1
   BIG_BLIND = 2
@@ -42,7 +42,7 @@ class community_table(Enum):
   TO_CALL = 6
   TO_ACT_POS = 7
 
-class player_table(Enum):
+class player_table(IntEnum):
   SEAT_EMPTY = 0
   SEAT_ID = 1
   STACK = 2
