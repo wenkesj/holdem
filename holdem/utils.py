@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2018 Sam Wenke (samwenke@gmail.com)
+# Copyright (c) 2019 Ingvar Lond (ingvar.lond@gmail.com)
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the "Software"),
@@ -19,16 +20,38 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+from enum import IntEnum
+
 from treys import Card
 
 
-class action_table:
+class action_table(IntEnum):
   CHECK = 0
   CALL = 1
   RAISE = 2
   FOLD = 3
   NA = 0
 
+class community_table(IntEnum):
+  BUTTON_POS = 0
+  SMALL_BLIND = 1
+  BIG_BLIND = 2
+  POT = 3
+  LAST_RAISE = 4
+  MINRAISE = 5
+  TO_CALL = 6
+  TO_ACT_POS = 7
+
+class player_table(IntEnum):
+  SEAT_EMPTY = 0
+  SEAT_ID = 1
+  STACK = 2
+  IS_IN_POT = 3
+  HAND_RANK = 4
+  HAS_ACTED = 5
+  IS_BETTING = 6
+  IS_ALL_IN = 7
+  LAST_SIDEPOT = 8
 
 def format_action(player, action):
   color = False
