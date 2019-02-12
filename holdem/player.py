@@ -129,6 +129,4 @@ class Player(object):
         move_tuple = ('call', tocall)
       elif action_idx == Player.FOLD:
         move_tuple = ('fold', 0)
-      else:
-        raise error.Error('invalid action ({}) must be raise (2), call (1), or fold (3)'.format(action_idx))
     return move_tuple
