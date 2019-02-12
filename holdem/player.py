@@ -71,7 +71,7 @@ class Player(object):
     self.hand_starting_stack = self.stack
     self.playing_hand = (self.stack != 0)
 
-  def bet(self, bet_size):
+  def declare_action(self, bet_size):
     self.playedthisround = True
     if not bet_size:
       return
@@ -94,7 +94,7 @@ class Player(object):
     self.hand = table_state.get('pocket_cards')
 
   # cleanup
-  def player_move(self, table_state, action):
+  def validate_action(self, table_state, action):
     self.update_localstate(table_state)
     bigblind = table_state.get('bigblind')
     tocall = min(table_state.get('tocall', 0), self.stack + self.currentbet)
@@ -128,7 +128,7 @@ class Player(object):
       elif action_idx == Player.CALL:
         move_tuple = ('call', tocall)
       elif action_idx == Player.FOLD:
-        move_tuple = ('fold', -1)
+        move_tuple = ('fold', 0)
       else:
         raise error.Error('invalid action ({}) must be raise (2), call (1), or fold (3)'.format(action_idx))
     return move_tuple

@@ -186,8 +186,8 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       raise error.Error('Rounds already finished, needs to be reset.')
 
     players = [p for p in self._seats if p.playing_hand]
-    if len(players) == 1:
-      raise error.Error('Round cannot be played with one player.')
+    if len(players) <= 1:
+      raise error.Error('Round cannot be played with one or less players.')
 
     self._last_player = self._current_player
     self._last_actions = actions
@@ -196,28 +196,22 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       if self._current_player.isallin:
         self._current_player = self._next(players, self._current_player)
         return self._get_current_step_returns(False)
-      move = self._current_player.player_move(
+      move = self._current_player.validate_action(
               self._output_state(self._current_player), actions[self._current_player.player_id])
       if self._debug:
         print('Player', self._current_player.player_id, move)
-      if move[0] != 'fold':
-        self._player_bet(self._current_player, move[1])
+      self._player_action(self._current_player, move[1])
       if move[0] == 'raise':
         for p in players:
           if p != self._current_player:
             p.playedthisround = False
-
+      prev_player = self._current_player
+      self._current_player = self._next(players, self._current_player)
       if move[0] == 'fold':
-        self._current_player.playing_hand = False
-        folded_player = self._current_player
-        players.remove(folded_player)
-        self._folded_players.append(folded_player)
-      else:
-        self._current_player = self._next(players, self._current_player)
-      self._current_player.playedthisround
-        # break if a single player left <<-- already will be resolved in next check, if we folded then there must be a bet and the other player has acted
-        #if len(players) == 1:
-          #self._resolve(players)
+        prev_player.playing_hand = False
+        players.remove(prev_player)
+        self._folded_players.append(prev_player)
+
     if all([player.playedthisround for player in players]):
       self._resolve(players)
 
@@ -298,24 +292,24 @@ class TexasHoldemEnv(Env, utils.EzPickle):
   def _post_smallblind(self, player):
     if self._debug:
       print('player ', player.player_id, 'small blind', self._smallblind)
-    self._player_bet(player, self._smallblind)
+    self._player_action(player, self._smallblind)
     player.blind = self._smallblind
     player.playedthisround = False
 
   def _post_bigblind(self, player):
     if self._debug:
       print('player ', player.player_id, 'big blind', self._bigblind)
-    self._player_bet(player, self._bigblind)
+    self._player_action(player, self._bigblind)
     player.playedthisround = False
     player.blind = self._bigblind
     self._lastraise = self._bigblind
 
-  def _player_bet(self, player, total_bet):
+  def _player_action(self, player, total_bet):
     # relative_bet is how much _additional_ money is the player betting this turn,
     # on top of what they have already contributed
     # total_bet is the total contribution by player to pot in this round
     relative_bet = min(player.stack, total_bet - player.currentbet)
-    player.bet(total_bet)
+    player.declare_action(total_bet)
 
     self._totalpot += relative_bet
     self._tocall = max(self._tocall, total_bet)
