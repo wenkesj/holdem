@@ -99,7 +99,6 @@ class Player(object):
   # cleanup
   def validate_action(self, table_state, action):
     self.update_localstate(table_state)
-    bigblind = table_state.get('bigblind')
     tocall = min(table_state.get('tocall', 0), self.stack_for_street)
     minraise = table_state.get('minraise', 0)
 
