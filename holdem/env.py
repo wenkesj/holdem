@@ -338,6 +338,9 @@ class TexasHoldemEnv(Env, utils.EzPickle):
       if not p.emptyplayer and p.sitting_out:
         p.sitting_out = False
         p.playing_hand = True
+      if p.stack < self._bigblind:
+        p.sitting_out = True
+        p.playing_hand = False
 
   def _resolve_sidepots(self, players_playing):
     players = [p for p in players_playing if p.currentbet]
